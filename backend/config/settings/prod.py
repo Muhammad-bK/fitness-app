@@ -1,0 +1,11 @@
+"""
+Production settings — tighten security, disable debug.
+"""
+
+from .base import *  # noqa: F401, F403
+
+DEBUG = False
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
