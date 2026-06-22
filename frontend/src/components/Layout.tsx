@@ -3,8 +3,12 @@ import { useAuthContext } from '../context/AuthContext';
 import { useLogout } from '../hooks/useAuth';
 
 const NAV_ITEMS = [
-  { path: '/', label: 'Workouts' },
-  { path: '/log', label: 'Log Workout' },
+  { path: '/', label: 'Dashboard' },
+  { path: '/workouts', label: 'Workouts' },
+  { path: '/log', label: 'Log' },
+  { path: '/analytics/bodyweight', label: 'Weight' },
+  { path: '/analytics/exercises', label: 'Exercises' },
+  { path: '/analytics/consistency', label: 'Consistency' },
 ];
 
 export function Layout() {

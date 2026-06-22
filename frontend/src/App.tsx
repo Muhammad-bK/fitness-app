@@ -8,6 +8,11 @@ import { RegisterPage } from './pages/RegisterPage';
 import { WorkoutListPage } from './pages/WorkoutListPage';
 import { WorkoutDetailPage } from './pages/WorkoutDetailPage';
 import { LogWorkoutPage } from './pages/LogWorkoutPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { BodyWeightPage } from './pages/BodyWeightPage';
+import { ExerciseProgressPage } from './pages/ExerciseProgressPage';
+import { ExerciseListAnalyticsPage } from './pages/ExerciseListAnalyticsPage';
+import { ConsistencyPage } from './pages/ConsistencyPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,9 +38,14 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route path="/" element={<WorkoutListPage />} />
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/workouts" element={<WorkoutListPage />} />
               <Route path="/workouts/:id" element={<WorkoutDetailPage />} />
               <Route path="/log" element={<LogWorkoutPage />} />
+              <Route path="/analytics/bodyweight" element={<BodyWeightPage />} />
+              <Route path="/analytics/exercises" element={<ExerciseListAnalyticsPage />} />
+              <Route path="/analytics/exercise/:exerciseId" element={<ExerciseProgressPage />} />
+              <Route path="/analytics/consistency" element={<ConsistencyPage />} />
             </Route>
           </Routes>
         </AuthProvider>

@@ -120,3 +120,105 @@ export interface ApiError {
     details: Record<string, string[]>;
   };
 }
+
+// Analytics types
+
+export interface BodyWeightPoint {
+  date: string;
+  weight_kg: string;
+}
+
+export interface SmoothedWeekPoint {
+  week: string;
+  avg_weight_kg: string;
+}
+
+export interface BodyWeightAnalytics {
+  period: { start: string; end: string };
+  daily: BodyWeightPoint[];
+  smoothed_weekly: SmoothedWeekPoint[];
+  current_weight_kg: string | null;
+  net_change_kg: string | null;
+}
+
+export interface WeightProgressionPoint {
+  date: string;
+  max_weight_kg: string;
+}
+
+export interface RepProgressionPoint {
+  date: string;
+  reps_at_top_weight: number;
+}
+
+export interface VolumeProgressionPoint {
+  date: string;
+  total_volume_kg: string;
+}
+
+export interface OneRmProgressionPoint {
+  date: string;
+  estimated_1rm_kg: string;
+}
+
+export interface PersonalRecord {
+  value_kg: string;
+  date: string | null;
+}
+
+export interface ExerciseAnalytics {
+  exercise: { id: string; name: string };
+  period: { start: string; end: string };
+  weight_progression: WeightProgressionPoint[];
+  rep_progression: RepProgressionPoint[];
+  volume_progression: VolumeProgressionPoint[];
+  one_rm_progression: OneRmProgressionPoint[];
+  personal_records: {
+    best_weight: PersonalRecord;
+    best_single_session_volume: PersonalRecord;
+    best_estimated_1rm: PersonalRecord;
+  };
+}
+
+export interface WeeklyCount {
+  week: string;
+  count: number;
+}
+
+export interface ConsistencyAnalytics {
+  period: { start: string; end: string };
+  workouts_this_week: number;
+  workouts_this_month: number;
+  total_workouts: number;
+  current_streak_weeks: number;
+  avg_workouts_per_week: number;
+  weekly_breakdown: WeeklyCount[];
+}
+
+export interface TopExercise {
+  exercise_id: string;
+  exercise_name: string;
+  session_count_30d: number;
+  recent_max_weight_kg: string | null;
+}
+
+export interface DashboardAnalytics {
+  current_weight_kg: string | null;
+  weight_change_30d_kg: string | null;
+  workouts_this_month: number;
+  strongest_lift: {
+    exercise_id: string;
+    exercise_name: string;
+    estimated_1rm_kg: string;
+  } | null;
+  latest_pr: {
+    exercise_name: string;
+    estimated_1rm_kg: string;
+    weight_kg: string;
+    reps: number;
+    date: string;
+  } | null;
+  weight_trend: BodyWeightPoint[];
+  workout_frequency: WeeklyCount[];
+  top_exercises: TopExercise[];
+}
