@@ -17,10 +17,10 @@ export function useLogin() {
   return useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       authApi.login(email, password),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       tokenStorage.setAccessToken(data.access);
       tokenStorage.setRefreshToken(data.refresh);
-      queryClient.invalidateQueries({ queryKey: ['me'] });
+      await queryClient.fetchQuery({ queryKey: ['me'], queryFn: authApi.getMe });
     },
   });
 }

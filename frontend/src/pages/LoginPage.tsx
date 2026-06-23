@@ -12,7 +12,7 @@ export function LoginPage() {
     e.preventDefault();
     login.mutate(
       { email, password },
-      { onSuccess: () => navigate('/') }
+      { onSuccess: () => navigate('/', { replace: true }) }
     );
   };
 
