@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLogin } from '../hooks/useAuth';
+import { paths } from '../routes';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,7 +13,7 @@ export function LoginPage() {
     e.preventDefault();
     login.mutate(
       { email, password },
-      { onSuccess: () => navigate('/', { replace: true }) }
+      { onSuccess: () => navigate(paths.home, { replace: true }) }
     );
   };
 
@@ -53,7 +54,7 @@ export function LoginPage() {
           </button>
           <p className="text-sm text-center text-gray-500">
             Don't have an account?{' '}
-            <Link to="/register" className="text-blue-600 hover:underline">
+            <Link to={paths.register} className="text-blue-600 hover:underline">
               Register
             </Link>
           </p>

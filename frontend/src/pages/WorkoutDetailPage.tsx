@@ -3,6 +3,7 @@ import { useWorkout } from '../hooks/useWorkouts';
 import { useAuthContext } from '../context/AuthContext';
 import { formatDate, formatRestTime } from '../lib/formatters';
 import { formatWeight } from '../lib/units';
+import { paths } from '../routes';
 
 export function WorkoutDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,7 +16,7 @@ export function WorkoutDetailPage() {
 
   return (
     <div>
-      <Link to="/" className="text-sm text-blue-600 hover:underline mb-4 inline-block">
+      <Link to={paths.workouts} className="text-sm text-blue-600 hover:underline mb-4 inline-block">
         &larr; Back to workouts
       </Link>
 

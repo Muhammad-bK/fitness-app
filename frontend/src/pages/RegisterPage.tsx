@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useRegister } from '../hooks/useAuth';
+import { paths } from '../routes';
 
 export function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -13,7 +14,7 @@ export function RegisterPage() {
     e.preventDefault();
     register.mutate(
       { email, password, displayName: displayName || undefined },
-      { onSuccess: () => navigate('/') }
+      { onSuccess: () => navigate(paths.home) }
     );
   };
 
@@ -65,7 +66,7 @@ export function RegisterPage() {
           </button>
           <p className="text-sm text-center text-gray-500">
             Already have an account?{' '}
-            <Link to="/login" className="text-blue-600 hover:underline">
+            <Link to={paths.login} className="text-blue-600 hover:underline">
               Log In
             </Link>
           </p>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useWorkouts, useDeleteWorkout } from '../hooks/useWorkouts';
 import { formatDate } from '../lib/formatters';
+import { paths } from '../routes';
 
 export function WorkoutListPage() {
   const { data, isLoading } = useWorkouts();
@@ -15,7 +16,7 @@ export function WorkoutListPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-gray-900">My Workouts</h1>
         <Link
-          to="/log"
+          to={paths.log}
           className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700"
         >
           Log Workout
@@ -25,7 +26,7 @@ export function WorkoutListPage() {
       {workouts.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           <p className="mb-2">No workouts yet.</p>
-          <Link to="/log" className="text-blue-600 hover:underline">
+          <Link to={paths.log} className="text-blue-600 hover:underline">
             Log your first workout
           </Link>
         </div>
@@ -36,7 +37,7 @@ export function WorkoutListPage() {
               key={w.id}
               className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between"
             >
-              <Link to={`/workouts/${w.id}`} className="flex-1">
+              <Link to={paths.workout(w.id)} className="flex-1">
                 <div className="font-medium text-gray-900">
                   {w.session_name || 'Unnamed Workout'}
                 </div>

@@ -13,6 +13,7 @@ import { BodyWeightPage } from './pages/BodyWeightPage';
 import { ExerciseProgressPage } from './pages/ExerciseProgressPage';
 import { ExerciseListAnalyticsPage } from './pages/ExerciseListAnalyticsPage';
 import { ConsistencyPage } from './pages/ConsistencyPage';
+import { routePatterns } from './routes';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,8 +30,8 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route path={routePatterns.login} element={<LoginPage />} />
+            <Route path={routePatterns.register} element={<RegisterPage />} />
             <Route
               element={
                 <ProtectedRoute>
@@ -38,14 +39,14 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/workouts" element={<WorkoutListPage />} />
-              <Route path="/workouts/:id" element={<WorkoutDetailPage />} />
-              <Route path="/log" element={<LogWorkoutPage />} />
-              <Route path="/analytics/bodyweight" element={<BodyWeightPage />} />
-              <Route path="/analytics/exercises" element={<ExerciseListAnalyticsPage />} />
-              <Route path="/analytics/exercise/:exerciseId" element={<ExerciseProgressPage />} />
-              <Route path="/analytics/consistency" element={<ConsistencyPage />} />
+              <Route path={routePatterns.home} element={<DashboardPage />} />
+              <Route path={routePatterns.workouts} element={<WorkoutListPage />} />
+              <Route path={routePatterns.workout} element={<WorkoutDetailPage />} />
+              <Route path={routePatterns.log} element={<LogWorkoutPage />} />
+              <Route path={routePatterns.analytics.bodyweight} element={<BodyWeightPage />} />
+              <Route path={routePatterns.analytics.exercises} element={<ExerciseListAnalyticsPage />} />
+              <Route path={routePatterns.analytics.exercise} element={<ExerciseProgressPage />} />
+              <Route path={routePatterns.analytics.consistency} element={<ConsistencyPage />} />
             </Route>
           </Routes>
         </AuthProvider>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useExercises } from '../hooks/useExercises';
 import { useCreateWorkout } from '../hooks/useWorkouts';
 import { useAuthContext } from '../context/AuthContext';
+import { paths } from '../routes';
 import type { SetWritePayload, WorkoutExerciseWritePayload } from '../types';
 
 interface SetFormData {
@@ -148,7 +149,7 @@ export function LogWorkoutPage() {
         exercises: exercisePayloads,
       },
       {
-        onSuccess: () => navigate('/'),
+        onSuccess: () => navigate(paths.home),
       }
     );
   };
@@ -398,7 +399,7 @@ export function LogWorkoutPage() {
           </button>
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => navigate(paths.home)}
             className="text-gray-500 px-4 py-2 rounded border border-gray-300 hover:bg-gray-50"
           >
             Cancel
