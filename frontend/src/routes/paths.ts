@@ -4,6 +4,7 @@ export const paths = {
   register: '/register',
   workouts: '/workouts',
   workout: (id: string | number) => `/workouts/${id}`,
+  editWorkout: (id: string | number) => `/workouts/${id}/edit`,
   log: '/log',
   analytics: {
     bodyweight: '/analytics/bodyweight',
@@ -19,6 +20,7 @@ export const routePatterns = {
   register: '/register',
   workouts: '/workouts',
   workout: '/workouts/:id',
+  editWorkout: '/workouts/:id/edit',
   log: '/log',
   analytics: {
     bodyweight: '/analytics/bodyweight',

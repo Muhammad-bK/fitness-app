@@ -8,6 +8,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { WorkoutListPage } from './pages/WorkoutListPage';
 import { WorkoutDetailPage } from './pages/WorkoutDetailPage';
 import { LogWorkoutPage } from './pages/LogWorkoutPage';
+import { EditWorkoutPage } from './pages/EditWorkoutPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { BodyWeightPage } from './pages/BodyWeightPage';
 import { ExerciseProgressPage } from './pages/ExerciseProgressPage';
@@ -42,6 +43,7 @@ function App() {
               <Route path={routePatterns.home} element={<DashboardPage />} />
               <Route path={routePatterns.workouts} element={<WorkoutListPage />} />
               <Route path={routePatterns.workout} element={<WorkoutDetailPage />} />
+              <Route path={routePatterns.editWorkout} element={<EditWorkoutPage />} />
               <Route path={routePatterns.log} element={<LogWorkoutPage />} />
               <Route path={routePatterns.analytics.bodyweight} element={<BodyWeightPage />} />
               <Route path={routePatterns.analytics.exercises} element={<ExerciseListAnalyticsPage />} />
