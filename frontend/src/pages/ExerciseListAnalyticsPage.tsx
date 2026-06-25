@@ -2,49 +2,57 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useExercises } from '../hooks/useExercises';
 import { paths, exerciseProgressNav } from '../routes';
+import { PageHeader } from '../components/ui/page-header';
+import { Input } from '../components/ui/input';
+import { Badge } from '../components/ui/badge';
+import { Card } from '../components/ui/card';
+import { LoadingState } from '../components/ui/loading-state';
 
 export function ExerciseListAnalyticsPage() {
   const [search, setSearch] = useState('');
   const { data, isLoading } = useExercises({ search });
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900">Exercise Progress</h1>
-      <p className="text-sm text-gray-500">Select an exercise to view its progression charts and PRs.</p>
+    <div className="space-y-6">
+      <PageHeader
+        title="Exercise Progress"
+        description="Select an exercise to view its progression charts and PRs."
+      />
 
-      <input
+      <Input
         type="text"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search exercises..."
-        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Search exercises…"
       />
 
-      {isLoading && <p className="text-gray-500">Loading...</p>}
+      {isLoading && <LoadingState />}
 
-      <div className="bg-white rounded-lg shadow divide-y divide-gray-100">
-        {data?.results.map((ex) => (
-          <Link
-            key={ex.id}
-            to={paths.analytics.exercise(ex.id)}
-            state={exerciseProgressNav.fromExercises}
-            className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
-          >
-            <div>
-              <span className="text-sm font-medium text-gray-900">{ex.name}</span>
-              {ex.muscle_group && (
-                <span className="ml-2 text-xs text-gray-500 bg-gray-100 rounded px-1.5 py-0.5">
-                  {ex.muscle_group}
-                </span>
-              )}
-            </div>
-            <span className="text-xs text-gray-400">{ex.category}</span>
-          </Link>
-        ))}
-      </div>
+      <Card className="p-0 overflow-hidden">
+        <div className="divide-y divide-k-border">
+          {data?.results.map((ex) => (
+            <Link
+              key={ex.id}
+              to={paths.analytics.exercise(ex.id)}
+              state={exerciseProgressNav.fromExercises}
+              className="flex items-center justify-between px-6 py-3.5 hover:bg-k-elevated/50 transition-colors"
+            >
+              <div>
+                <span className="text-sm font-medium text-k-fg">{ex.name}</span>
+                {ex.muscle_group && (
+                  <Badge variant="default" className="ml-2">
+                    {ex.muscle_group}
+                  </Badge>
+                )}
+              </div>
+              <span className="text-xs text-k-faint">{ex.category}</span>
+            </Link>
+          ))}
+        </div>
+      </Card>
 
       {data && data.results.length === 0 && (
-        <p className="text-gray-500 text-center py-8">No exercises found.</p>
+        <p className="text-k-muted text-center py-8">No exercises found.</p>
       )}
     </div>
   );

@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { OnboardingPage } from './pages/OnboardingPage';
 import { WorkoutListPage } from './pages/WorkoutListPage';
 import { WorkoutDetailPage } from './pages/WorkoutDetailPage';
 import { LogWorkoutPage } from './pages/LogWorkoutPage';
@@ -41,6 +42,7 @@ function App() {
               }
             >
               <Route path={routePatterns.home} element={<DashboardPage />} />
+              <Route path={routePatterns.onboarding} element={<OnboardingPage />} />
               <Route path={routePatterns.workouts} element={<WorkoutListPage />} />
               <Route path={routePatterns.workout} element={<WorkoutDetailPage />} />
               <Route path={routePatterns.editWorkout} element={<EditWorkoutPage />} />

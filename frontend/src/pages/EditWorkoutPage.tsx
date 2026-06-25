@@ -5,6 +5,14 @@ import { useWorkout, useUpdateWorkout } from '../hooks/useWorkouts';
 import { useAuthContext } from '../context/AuthContext';
 import { paths } from '../routes';
 import type { SetWritePayload, WorkoutExerciseWritePayload } from '../types';
+import { PageHeader } from '../components/ui/page-header';
+import { Button } from '../components/ui/button';
+import { Card, CardTitle } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { NativeSelect } from '../components/ui/native-select';
+import { LoadingState } from '../components/ui/loading-state';
+import { cn } from '../lib/utils';
 
 interface SetFormData {
   set_type: string;
@@ -37,6 +45,8 @@ function emptySet(): SetFormData {
   };
 }
 
+const compactInput = 'py-1.5 px-2 text-xs h-auto';
+
 export function EditWorkoutPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -53,54 +63,41 @@ export function EditWorkoutPage() {
   const [exercises, setExercises] = useState<ExerciseFormData[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Load existing workout data
   useEffect(() => {
     if (workoutData) {
       setSessionName(workoutData.session_name);
       setWorkoutDate(workoutData.workout_date);
-      setBodyWeight(
-        workoutData.body_weight_kg ? workoutData.body_weight_kg : ''
-      );
+      setBodyWeight(workoutData.body_weight_kg ? workoutData.body_weight_kg : '');
       setSessionNotes(workoutData.notes);
 
-      const loadedExercises: ExerciseFormData[] =
-        workoutData.workout_exercises.map((we) => ({
-          exercise_id: we.exercise.id,
-          exercise_name: we.exercise.name,
-          notes: we.notes,
-          sets: we.sets.map((s) => ({
-            set_type: s.set_type,
-            weight: s.weight_kg ? s.weight_kg : '',
-            reps: s.reps.toString(),
-            rest_time_seconds: s.rest_time_seconds
-              ? s.rest_time_seconds.toString()
-              : '',
-            had_spotter: s.had_spotter,
-            paused: s.paused,
-            pause_at_rep: s.pause_at_rep ? s.pause_at_rep.toString() : '',
-            notes: s.notes,
-          })),
-        }));
+      const loadedExercises: ExerciseFormData[] = workoutData.workout_exercises.map((we) => ({
+        exercise_id: we.exercise.id,
+        exercise_name: we.exercise.name,
+        notes: we.notes,
+        sets: we.sets.map((s) => ({
+          set_type: s.set_type,
+          weight: s.weight_kg ? s.weight_kg : '',
+          reps: s.reps.toString(),
+          rest_time_seconds: s.rest_time_seconds ? s.rest_time_seconds.toString() : '',
+          had_spotter: s.had_spotter,
+          paused: s.paused,
+          pause_at_rep: s.pause_at_rep ? s.pause_at_rep.toString() : '',
+          notes: s.notes,
+        })),
+      }));
       setExercises(loadedExercises);
     }
   }, [workoutData]);
 
   const allExercises = exerciseData?.results ?? [];
   const filteredExercises = searchTerm
-    ? allExercises.filter((e) =>
-        e.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+    ? allExercises.filter((e) => e.name.toLowerCase().includes(searchTerm.toLowerCase()))
     : allExercises;
 
   const addExercise = (exerciseId: string, exerciseName: string) => {
     setExercises((prev) => [
       ...prev,
-      {
-        exercise_id: exerciseId,
-        exercise_name: exerciseName,
-        notes: '',
-        sets: [emptySet()],
-      },
+      { exercise_id: exerciseId, exercise_name: exerciseName, notes: '', sets: [emptySet()] },
     ]);
     setSearchTerm('');
   };
@@ -110,74 +107,70 @@ export function EditWorkoutPage() {
   };
 
   const addSet = (exIdx: number) => {
-    setExercises((prev) => {
-      const copy = [...prev];
-      copy[exIdx] = {
-        ...copy[exIdx],
-        sets: [...copy[exIdx].sets, emptySet()],
-      };
-      return copy;
-    });
+    setExercises((prev) =>
+      prev.map((exercise, index) =>
+        index === exIdx
+          ? { ...exercise, sets: [...exercise.sets, emptySet()] }
+          : exercise,
+      ),
+    );
   };
 
   const removeSet = (exIdx: number, setIdx: number) => {
-    setExercises((prev) => {
-      const copy = [...prev];
-      copy[exIdx] = {
-        ...copy[exIdx],
-        sets: copy[exIdx].sets.filter((_, i) => i !== setIdx),
-      };
-      return copy;
-    });
+    setExercises((prev) =>
+      prev.map((exercise, index) =>
+        index === exIdx
+          ? { ...exercise, sets: exercise.sets.filter((_, i) => i !== setIdx) }
+          : exercise,
+      ),
+    );
   };
 
   const updateSet = (
     exIdx: number,
     setIdx: number,
     field: keyof SetFormData,
-    value: string | boolean
+    value: string | boolean,
   ) => {
-    setExercises((prev) => {
-      const copy = [...prev];
-      const sets = [...copy[exIdx].sets];
-      sets[setIdx] = { ...sets[setIdx], [field]: value };
-      copy[exIdx] = { ...copy[exIdx], sets };
-      return copy;
-    });
+    setExercises((prev) =>
+      prev.map((exercise, index) => {
+        if (index !== exIdx) return exercise;
+        return {
+          ...exercise,
+          sets: exercise.sets.map((set, i) =>
+            i === setIdx ? { ...set, [field]: value } : set,
+          ),
+        };
+      }),
+    );
   };
 
   const updateExerciseNotes = (exIdx: number, notes: string) => {
-    setExercises((prev) => {
-      const copy = [...prev];
-      copy[exIdx] = { ...copy[exIdx], notes };
-      return copy;
-    });
+    setExercises((prev) =>
+      prev.map((exercise, index) => (index === exIdx ? { ...exercise, notes } : exercise)),
+    );
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    const exercisePayloads: WorkoutExerciseWritePayload[] = exercises.map(
-      (ex, exIdx) => ({
-        exercise_id: ex.exercise_id,
-        order_in_session: exIdx + 1,
-        notes: ex.notes,
-        sets: ex.sets.map((s, sIdx): SetWritePayload => ({
-          set_number: sIdx + 1,
-          set_type: s.set_type,
-          weight: s.weight ? parseFloat(s.weight) : null,
-          weight_unit: s.weight ? unit : null,
-          reps: parseInt(s.reps) || 0,
-          rest_time_seconds: s.rest_time_seconds
-            ? parseInt(s.rest_time_seconds)
-            : null,
-          had_spotter: s.had_spotter,
-          paused: s.paused,
-          pause_at_rep: s.pause_at_rep ? parseInt(s.pause_at_rep) : null,
-          notes: s.notes,
-        })),
-      })
-    );
+    const exercisePayloads: WorkoutExerciseWritePayload[] = exercises.map((ex, exIdx) => ({
+      exercise_id: ex.exercise_id,
+      order_in_session: exIdx + 1,
+      notes: ex.notes,
+      sets: ex.sets.map((s, sIdx): SetWritePayload => ({
+        set_number: sIdx + 1,
+        set_type: s.set_type,
+        weight: s.weight ? parseFloat(s.weight) : null,
+        weight_unit: s.weight ? unit : null,
+        reps: parseInt(s.reps) || 0,
+        rest_time_seconds: s.rest_time_seconds ? parseInt(s.rest_time_seconds) : null,
+        had_spotter: s.had_spotter,
+        paused: s.paused,
+        pause_at_rep: s.pause_at_rep ? parseInt(s.pause_at_rep) : null,
+        notes: s.notes,
+      })),
+    }));
 
     updateWorkout.mutate(
       {
@@ -191,109 +184,81 @@ export function EditWorkoutPage() {
           exercises: exercisePayloads,
         },
       },
-      {
-        onSuccess: () => navigate(paths.workouts),
-      }
+      { onSuccess: () => { void navigate(paths.workouts); } },
     );
   };
 
-  if (isLoading) {
-    return <div className="text-gray-500">Loading workout...</div>;
-  }
+  if (isLoading) return <LoadingState message="Loading workout…" />;
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-gray-900 mb-6">Edit Workout</h1>
+      <PageHeader title="Edit Workout" className="mb-8" />
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Session info */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
-                Session Name
-              </label>
-              <input
+        <Card>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Session Name</Label>
+              <Input
                 type="text"
                 value={sessionName}
                 onChange={(e) => setSessionName(e.target.value)}
                 placeholder="e.g. Push Day"
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
               />
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
-                Date
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label>Date</Label>
+              <Input
                 type="date"
                 value={workoutDate}
                 onChange={(e) => setWorkoutDate(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
                 required
               />
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
-                Body Weight ({unit})
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label>Body Weight ({unit})</Label>
+              <Input
                 type="number"
                 step="0.1"
                 value={bodyWeight}
                 onChange={(e) => setBodyWeight(e.target.value)}
                 placeholder="Optional"
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
               />
             </div>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">
-              Notes
-            </label>
-            <input
+          <div className="space-y-2 mt-4">
+            <Label>Notes</Label>
+            <Input
               type="text"
               value={sessionNotes}
               onChange={(e) => setSessionNotes(e.target.value)}
               placeholder="Session notes (optional)"
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
             />
           </div>
-        </div>
+        </Card>
 
-        {/* Exercises */}
         {exercises.map((ex, exIdx) => (
-          <div
-            key={exIdx}
-            className="bg-white rounded-lg border border-gray-200 p-4"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-900">{ex.exercise_name}</h3>
-              <button
-                type="button"
-                onClick={() => removeExercise(exIdx)}
-                className="text-xs text-red-500 hover:text-red-700"
-              >
+          <Card key={exIdx}>
+            <div className="flex items-center justify-between mb-4">
+              <CardTitle>{ex.exercise_name}</CardTitle>
+              <Button type="button" variant="destructive" size="sm" onClick={() => removeExercise(exIdx)}>
                 Remove
-              </button>
+              </Button>
             </div>
 
-            {/* Exercise notes */}
-            <div className="mb-3">
-              <input
+            <div className="mb-4">
+              <Input
                 type="text"
                 value={ex.notes}
                 onChange={(e) => updateExerciseNotes(exIdx, e.target.value)}
                 placeholder="Exercise notes (optional)"
-                className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
               />
             </div>
 
-            {/* Sets table */}
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-gray-500 text-left text-xs">
+                  <tr className="text-k-muted text-left text-xs border-b border-k-border">
                     <th className="pb-2 w-8">#</th>
                     <th className="pb-2">Type</th>
                     <th className="pb-2">Weight ({unit})</th>
@@ -301,95 +266,75 @@ export function EditWorkoutPage() {
                     <th className="pb-2">Rest (s)</th>
                     <th className="pb-2 w-8">Spot</th>
                     <th className="pb-2 w-8">Pause</th>
-                    <th className="pb-2 w-12"></th>
+                    <th className="pb-2 w-12" />
                   </tr>
                 </thead>
                 <tbody>
                   {ex.sets.map((set, setIdx) => (
-                    <tr key={setIdx} className="border-t border-gray-50">
-                      <td className="py-1 text-gray-400">{setIdx + 1}</td>
-                      <td className="py-1 pr-1">
-                        <select
+                    <tr key={setIdx} className="border-t border-k-border/50">
+                      <td className="py-2 text-k-faint">{setIdx + 1}</td>
+                      <td className="py-2 pr-2">
+                        <NativeSelect
                           value={set.set_type}
-                          onChange={(e) =>
-                            updateSet(exIdx, setIdx, 'set_type', e.target.value)
-                          }
-                          className="border border-gray-300 rounded px-1 py-1 text-xs w-full"
+                          onChange={(e) => updateSet(exIdx, setIdx, 'set_type', e.target.value)}
+                          className={cn(compactInput, 'w-full min-w-[90px]')}
                         >
                           <option value="working">Working</option>
                           <option value="warmup">Warmup</option>
                           <option value="dropset">Dropset</option>
                           <option value="failure">Failure</option>
-                        </select>
+                        </NativeSelect>
                       </td>
-                      <td className="py-1 pr-1">
-                        <input
+                      <td className="py-2 pr-2">
+                        <Input
                           type="number"
                           step="0.5"
                           value={set.weight}
-                          onChange={(e) =>
-                            updateSet(exIdx, setIdx, 'weight', e.target.value)
-                          }
+                          onChange={(e) => updateSet(exIdx, setIdx, 'weight', e.target.value)}
                           placeholder="—"
-                          className="border border-gray-300 rounded px-2 py-1 text-xs w-20"
+                          className={cn(compactInput, 'w-20')}
                         />
                       </td>
-                      <td className="py-1 pr-1">
-                        <input
+                      <td className="py-2 pr-2">
+                        <Input
                           type="number"
                           value={set.reps}
-                          onChange={(e) =>
-                            updateSet(exIdx, setIdx, 'reps', e.target.value)
-                          }
-                          className="border border-gray-300 rounded px-2 py-1 text-xs w-16"
+                          onChange={(e) => updateSet(exIdx, setIdx, 'reps', e.target.value)}
+                          className={cn(compactInput, 'w-16')}
                           required
                         />
                       </td>
-                      <td className="py-1 pr-1">
-                        <input
+                      <td className="py-2 pr-2">
+                        <Input
                           type="number"
                           value={set.rest_time_seconds}
-                          onChange={(e) =>
-                            updateSet(
-                              exIdx,
-                              setIdx,
-                              'rest_time_seconds',
-                              e.target.value
-                            )
-                          }
+                          onChange={(e) => updateSet(exIdx, setIdx, 'rest_time_seconds', e.target.value)}
                           placeholder="—"
-                          className="border border-gray-300 rounded px-2 py-1 text-xs w-16"
+                          className={cn(compactInput, 'w-16')}
                         />
                       </td>
-                      <td className="py-1 text-center">
+                      <td className="py-2 text-center">
                         <input
                           type="checkbox"
                           checked={set.had_spotter}
-                          onChange={(e) =>
-                            updateSet(
-                              exIdx,
-                              setIdx,
-                              'had_spotter',
-                              e.target.checked
-                            )
-                          }
+                          onChange={(e) => updateSet(exIdx, setIdx, 'had_spotter', e.target.checked)}
+                          className="accent-k-brand"
                         />
                       </td>
-                      <td className="py-1 text-center">
+                      <td className="py-2 text-center">
                         <input
                           type="checkbox"
                           checked={set.paused}
-                          onChange={(e) =>
-                            updateSet(exIdx, setIdx, 'paused', e.target.checked)
-                          }
+                          onChange={(e) => updateSet(exIdx, setIdx, 'paused', e.target.checked)}
+                          className="accent-k-brand"
                         />
                       </td>
-                      <td className="py-1">
+                      <td className="py-2">
                         {ex.sets.length > 1 && (
                           <button
                             type="button"
                             onClick={() => removeSet(exIdx, setIdx)}
-                            className="text-gray-400 hover:text-red-500 text-xs"
+                            className="text-k-faint hover:text-k-error text-xs"
                           >
                             ✕
                           </button>
@@ -401,42 +346,35 @@ export function EditWorkoutPage() {
               </table>
             </div>
 
-            <button
-              type="button"
-              onClick={() => addSet(exIdx)}
-              className="text-xs text-blue-600 hover:text-blue-800 mt-2"
-            >
+            <Button type="button" variant="ghost" size="sm" onClick={() => addSet(exIdx)} className="mt-3">
               + Add Set
-            </button>
-          </div>
+            </Button>
+          </Card>
         ))}
 
-        {/* Exercise picker */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <label className="block text-xs font-medium text-gray-500 mb-2">
-            Add Exercise
-          </label>
-          <input
+        <Card>
+          <Label className="mb-2 block">Add Exercise</Label>
+          <Input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search exercises..."
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm mb-2"
+            placeholder="Search exercises…"
+            className="mb-2"
           />
           {searchTerm && (
-            <div className="max-h-48 overflow-y-auto border border-gray-200 rounded">
+            <div className="max-h-48 overflow-y-auto border border-k-border rounded-lg">
               {filteredExercises.length === 0 ? (
-                <div className="p-3 text-sm text-gray-400">No exercises found</div>
+                <div className="p-3 text-sm text-k-faint">No exercises found</div>
               ) : (
                 filteredExercises.map((ex) => (
                   <button
                     key={ex.id}
                     type="button"
                     onClick={() => addExercise(ex.id, ex.name)}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 border-b border-gray-50 last:border-0"
+                    className="w-full text-left px-3 py-2.5 text-sm hover:bg-k-elevated border-b border-k-border/50 last:border-0 transition-colors"
                   >
-                    <span className="font-medium">{ex.name}</span>
-                    <span className="text-gray-400 ml-2 text-xs">
+                    <span className="font-medium text-k-fg">{ex.name}</span>
+                    <span className="text-k-faint ml-2 text-xs">
                       {ex.muscle_group} &middot; {ex.category}
                     </span>
                   </button>
@@ -444,30 +382,24 @@ export function EditWorkoutPage() {
               )}
             </div>
           )}
-        </div>
+        </Card>
 
-        {/* Submit */}
         <div className="flex gap-3">
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="md"
             disabled={exercises.length === 0 || updateWorkout.isPending}
-            className="bg-blue-600 text-white px-6 py-2 rounded font-medium hover:bg-blue-700 disabled:opacity-50"
           >
-            {updateWorkout.isPending ? 'Saving...' : 'Save Changes'}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate(paths.home)}
-            className="text-gray-500 px-4 py-2 rounded border border-gray-300 hover:bg-gray-50"
-          >
+            {updateWorkout.isPending ? 'Saving…' : 'Save Changes'}
+          </Button>
+          <Button type="button" variant="outline" size="md" onClick={() => navigate(paths.home)}>
             Cancel
-          </button>
+          </Button>
         </div>
 
         {updateWorkout.isError && (
-          <p className="text-red-600 text-sm">
-            Failed to save workout. Check your inputs and try again.
-          </p>
+          <p className="text-k-error text-sm">Failed to save workout. Check your inputs and try again.</p>
         )}
       </form>
     </div>

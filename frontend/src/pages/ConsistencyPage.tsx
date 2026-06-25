@@ -9,15 +9,32 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useConsistency } from '../hooks/useAnalytics';
+import { PageHeader } from '../components/ui/page-header';
+import { StatCard } from '../components/ui/stat-card';
+import { PeriodSelector } from '../components/ui/period-selector';
+import { Card, CardTitle } from '../components/ui/card';
+import { LoadingState } from '../components/ui/loading-state';
+import { CHART_COLORS, chartAxisProps, chartGridProps } from '../lib/chartTheme';
 
 type Period = 'month' | 'year' | 'all';
+
+const PERIOD_OPTIONS: { value: Period; label: string }[] = [
+  { value: 'month', label: '30d' },
+  { value: 'year', label: '1y' },
+  { value: 'all', label: 'All' },
+];
+
+const tooltipStyle = {
+  contentStyle: { background: '#1c1c1f', border: '1px solid #3f3f46', borderRadius: 8 },
+  labelStyle: { color: '#a1a1aa' },
+};
 
 export function ConsistencyPage() {
   const [period, setPeriod] = useState<Period>('year');
   const { data, isLoading, error } = useConsistency(period);
 
-  if (isLoading) return <div className="text-gray-500">Loading consistency data...</div>;
-  if (error) return <div className="text-red-600">Failed to load consistency data.</div>;
+  if (isLoading) return <LoadingState message="Loading consistency data…" />;
+  if (error) return <p className="text-k-error">Failed to load consistency data.</p>;
   if (!data) return null;
 
   const weeklyData = data.weekly_breakdown.map((w) => ({
@@ -26,14 +43,13 @@ export function ConsistencyPage() {
   }));
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Consistency</h1>
-        <PeriodSelector period={period} onChange={setPeriod} />
-      </div>
+    <div className="space-y-8">
+      <PageHeader
+        title="Consistency"
+        action={<PeriodSelector period={period} onChange={setPeriod} options={PERIOD_OPTIONS} />}
+      />
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="This Week" value={String(data.workouts_this_week)} />
         <StatCard label="This Month" value={String(data.workouts_this_month)} />
         <StatCard
@@ -48,61 +64,24 @@ export function ConsistencyPage() {
         />
       </div>
 
-      {/* Weekly breakdown chart */}
       {weeklyData.length > 0 && (
-        <section className="bg-white rounded-lg shadow p-4">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">Workouts per Week</h2>
+        <Card>
+          <CardTitle className="text-sm font-medium text-k-muted mb-4">Workouts per Week</CardTitle>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="week" tick={{ fontSize: 11 }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="workouts" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+              <CartesianGrid {...chartGridProps} />
+              <XAxis dataKey="week" {...chartAxisProps} />
+              <YAxis allowDecimals={false} {...chartAxisProps} />
+              <Tooltip {...tooltipStyle} />
+              <Bar dataKey="workouts" fill={CHART_COLORS.bar} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </section>
+        </Card>
       )}
 
       {weeklyData.length === 0 && (
-        <p className="text-gray-500 text-center py-8">No workout data for this period.</p>
+        <p className="text-k-muted text-center py-8">No workout data for this period.</p>
       )}
-    </div>
-  );
-}
-
-function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</p>
-      <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-      {sub && <p className="text-xs text-gray-500 mt-0.5">{sub}</p>}
-    </div>
-  );
-}
-
-function PeriodSelector({ period, onChange }: { period: Period; onChange: (p: Period) => void }) {
-  const options: { value: Period; label: string }[] = [
-    { value: 'month', label: '30d' },
-    { value: 'year', label: '1y' },
-    { value: 'all', label: 'All' },
-  ];
-
-  return (
-    <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
-      {options.map((o) => (
-        <button
-          key={o.value}
-          onClick={() => onChange(o.value)}
-          className={`px-3 py-1 text-xs font-medium rounded-md transition ${
-            period === o.value
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          {o.label}
-        </button>
-      ))}
     </div>
   );
 }

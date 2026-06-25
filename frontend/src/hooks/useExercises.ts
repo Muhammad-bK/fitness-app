@@ -13,7 +13,7 @@ export function useCreateExercise() {
   return useMutation({
     mutationFn: exercisesApi.createExercise,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['exercises'] });
+      void queryClient.invalidateQueries({ queryKey: ['exercises'] });
     },
   });
 }

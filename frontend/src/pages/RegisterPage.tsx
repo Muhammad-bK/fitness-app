@@ -2,6 +2,11 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useRegister } from '../hooks/useAuth';
 import { paths } from '../routes';
+import { ThemeToggle } from '../components/ThemeToggle';
+import { Button } from '../components/ui/button';
+import { Card } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 
 export function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -14,63 +19,66 @@ export function RegisterPage() {
     e.preventDefault();
     register.mutate(
       { email, password, displayName: displayName || undefined },
-      { onSuccess: () => navigate(paths.home) }
+      { onSuccess: () => { void navigate(paths.onboarding, { replace: true, state: { from: paths.register } }); } },
     );
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center mb-6">Create Account</h1>
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
-            <input
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Optional"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-              minLength={8}
-            />
-          </div>
-          {register.isError && (
-            <p className="text-red-600 text-sm">Registration failed. Try a different email.</p>
-          )}
-          <button
-            type="submit"
-            disabled={register.isPending}
-            className="w-full bg-blue-600 text-white py-2 rounded font-medium hover:bg-blue-700 disabled:opacity-50"
-          >
-            {register.isPending ? 'Creating...' : 'Create Account'}
-          </button>
-          <p className="text-sm text-center text-gray-500">
-            Already have an account?{' '}
-            <Link to={paths.login} className="text-blue-600 hover:underline">
-              Log In
-            </Link>
-          </p>
-        </form>
+    <div className="min-h-screen flex items-center justify-center bg-k-bg px-6 relative">
+      <ThemeToggle className="absolute top-6 right-6" />
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <span className="text-xs font-bold tracking-[0.18em] uppercase text-k-fg">
+            Zeeshan app
+          </span>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-k-fg">Create account</h1>
+          <p className="mt-2 text-sm text-k-muted">Start building your personalized program</p>
+        </div>
+
+        <Card>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Display Name</Label>
+              <Input
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Optional"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Password</Label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={8}
+              />
+            </div>
+            {register.isError && (
+              <p className="text-sm text-k-error">Registration failed. Try a different email.</p>
+            )}
+            <Button type="submit" variant="primary" size="md" disabled={register.isPending} className="w-full">
+              {register.isPending ? 'Creating…' : 'Create Account'}
+            </Button>
+            <p className="text-sm text-center text-k-muted">
+              Already have an account?{' '}
+              <Link to={paths.login} className="text-k-brand hover:underline">
+                Log In
+              </Link>
+            </p>
+          </form>
+        </Card>
       </div>
     </div>
   );

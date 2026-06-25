@@ -40,7 +40,12 @@ export function useRegister() {
     onSuccess: (data) => {
       tokenStorage.setAccessToken(data.tokens.access);
       tokenStorage.setRefreshToken(data.tokens.refresh);
-      queryClient.invalidateQueries({ queryKey: ['me'] });
+    
+      queryClient.setQueryData(['me'], data.user);
+    
+      void queryClient.invalidateQueries({
+        queryKey: ['onboarding-state'],
+      });
     },
   });
 }
@@ -65,7 +70,7 @@ export function useUpdateProfile() {
   return useMutation({
     mutationFn: authApi.updateMe,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['me'] });
+      void queryClient.invalidateQueries({ queryKey: ['me'] });
     },
   });
 }
