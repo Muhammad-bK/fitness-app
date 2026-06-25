@@ -13,6 +13,7 @@ import {
 import { useDashboard } from '../hooks/useAnalytics';
 import { useAuthContext } from '../context/AuthContext';
 import { displayWeight, formatWeight } from '../lib/units';
+import { paths, exerciseProgressNav } from '../routes';
 
 export function DashboardPage() {
   const { data, isLoading, error } = useDashboard();
@@ -97,7 +98,8 @@ export function DashboardPage() {
             {data.top_exercises.map((ex) => (
               <Link
                 key={ex.exercise_id}
-                to={`/analytics/exercise/${ex.exercise_id}`}
+                to={paths.analytics.exercise(ex.exercise_id)}
+                state={exerciseProgressNav.fromDashboard}
                 className="flex items-center justify-between py-2 hover:bg-gray-50 -mx-2 px-2 rounded"
               >
                 <div>

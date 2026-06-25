@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useExercises } from '../hooks/useExercises';
+import { paths, exerciseProgressNav } from '../routes';
 
 export function ExerciseListAnalyticsPage() {
   const [search, setSearch] = useState('');
@@ -25,7 +26,8 @@ export function ExerciseListAnalyticsPage() {
         {data?.results.map((ex) => (
           <Link
             key={ex.id}
-            to={`/analytics/exercise/${ex.id}`}
+            to={paths.analytics.exercise(ex.id)}
+            state={exerciseProgressNav.fromExercises}
             className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
           >
             <div>

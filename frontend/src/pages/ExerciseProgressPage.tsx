@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import {
   LineChart,
   Line,
@@ -12,10 +12,16 @@ import {
 import { useExerciseAnalytics } from '../hooks/useAnalytics';
 import { useAuthContext } from '../context/AuthContext';
 import { displayWeight, formatWeight } from '../lib/units';
+import { exerciseProgressNav, type ExerciseProgressLocationState } from '../routes';
 
 type Period = 'week' | 'month' | 'year' | 'all';
 
 export function ExerciseProgressPage() {
+  const location = useLocation();
+  const navState = location.state as ExerciseProgressLocationState | null;
+  const prevRoute = navState?.prevRoute ?? exerciseProgressNav.fromExercises.prevRoute;
+  const prevLabel = navState?.prevLabel ?? exerciseProgressNav.fromExercises.prevLabel;
+
   const { exerciseId } = useParams<{ exerciseId: string }>();
   const [period, setPeriod] = useState<Period>('year');
   const { data, isLoading, error } = useExerciseAnalytics(exerciseId, period);
@@ -52,8 +58,8 @@ export function ExerciseProgressPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <Link to="/analytics/exercises" className="text-sm text-blue-600 hover:underline">
-            &larr; All Exercises
+          <Link to={prevRoute} className="text-sm text-blue-600 hover:underline">
+            &larr; {prevLabel}
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">{data.exercise.name}</h1>
         </div>

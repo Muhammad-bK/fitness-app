@@ -1,14 +1,15 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../context/AuthContext';
 import { useLogout } from '../hooks/useAuth';
+import { paths } from '../routes';
 
 const NAV_ITEMS = [
-  { path: '/', label: 'Dashboard' },
-  { path: '/workouts', label: 'Workouts' },
-  { path: '/log', label: 'Log' },
-  { path: '/analytics/bodyweight', label: 'Weight' },
-  { path: '/analytics/exercises', label: 'Exercises' },
-  { path: '/analytics/consistency', label: 'Consistency' },
+  { path: paths.home, label: 'Dashboard' },
+  { path: paths.workouts, label: 'Workouts' },
+  { path: paths.log, label: 'Log' },
+  { path: paths.analytics.bodyweight, label: 'Weight' },
+  { path: paths.analytics.exercises, label: 'Exercises' },
+  { path: paths.analytics.consistency, label: 'Consistency' },
 ];
 
 export function Layout() {
@@ -19,7 +20,7 @@ export function Layout() {
   const handleLogout = () => {
     logout.mutate(undefined, {
       onSuccess: () => {
-        window.location.href = '/login';
+        window.location.href = paths.login;
       },
     });
   };
@@ -29,7 +30,7 @@ export function Layout() {
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
           <div className="flex items-center gap-6">
-            <Link to="/" className="font-bold text-lg text-gray-900">
+            <Link to={paths.home} className="font-bold text-lg text-gray-900">
               Workout Tracker
             </Link>
             {NAV_ITEMS.map((item) => (

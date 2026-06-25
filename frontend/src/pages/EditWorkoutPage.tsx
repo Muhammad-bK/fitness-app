@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, type FormEvent, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useExercises } from '../hooks/useExercises';
-import { useCreateWorkout } from '../hooks/useWorkouts';
+import { useWorkout, useUpdateWorkout } from '../hooks/useWorkouts';
 import { useAuthContext } from '../context/AuthContext';
 import { paths } from '../routes';
 import type { SetWritePayload, WorkoutExerciseWritePayload } from '../types';
@@ -37,21 +37,53 @@ function emptySet(): SetFormData {
   };
 }
 
-export function LogWorkoutPage() {
+export function EditWorkoutPage() {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const unit = user?.unit_preference ?? 'kg';
   const { data: exerciseData } = useExercises();
-  const createWorkout = useCreateWorkout();
+  const { data: workoutData, isLoading } = useWorkout(id || '');
+  const updateWorkout = useUpdateWorkout();
 
   const [sessionName, setSessionName] = useState('');
-  const [workoutDate, setWorkoutDate] = useState(
-    new Date().toISOString().split('T')[0]
-  );
+  const [workoutDate, setWorkoutDate] = useState('');
   const [bodyWeight, setBodyWeight] = useState('');
   const [sessionNotes, setSessionNotes] = useState('');
   const [exercises, setExercises] = useState<ExerciseFormData[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Load existing workout data
+  useEffect(() => {
+    if (workoutData) {
+      setSessionName(workoutData.session_name);
+      setWorkoutDate(workoutData.workout_date);
+      setBodyWeight(
+        workoutData.body_weight_kg ? workoutData.body_weight_kg : ''
+      );
+      setSessionNotes(workoutData.notes);
+
+      const loadedExercises: ExerciseFormData[] =
+        workoutData.workout_exercises.map((we) => ({
+          exercise_id: we.exercise.id,
+          exercise_name: we.exercise.name,
+          notes: we.notes,
+          sets: we.sets.map((s) => ({
+            set_type: s.set_type,
+            weight: s.weight_kg ? s.weight_kg : '',
+            reps: s.reps.toString(),
+            rest_time_seconds: s.rest_time_seconds
+              ? s.rest_time_seconds.toString()
+              : '',
+            had_spotter: s.had_spotter,
+            paused: s.paused,
+            pause_at_rep: s.pause_at_rep ? s.pause_at_rep.toString() : '',
+            notes: s.notes,
+          })),
+        }));
+      setExercises(loadedExercises);
+    }
+  }, [workoutData]);
 
   const allExercises = exerciseData?.results ?? [];
   const filteredExercises = searchTerm
@@ -114,6 +146,14 @@ export function LogWorkoutPage() {
     });
   };
 
+  const updateExerciseNotes = (exIdx: number, notes: string) => {
+    setExercises((prev) => {
+      const copy = [...prev];
+      copy[exIdx] = { ...copy[exIdx], notes };
+      return copy;
+    });
+  };
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
@@ -139,24 +179,31 @@ export function LogWorkoutPage() {
       })
     );
 
-    createWorkout.mutate(
+    updateWorkout.mutate(
       {
-        session_name: sessionName,
-        workout_date: workoutDate,
-        body_weight: bodyWeight ? parseFloat(bodyWeight) : null,
-        body_weight_unit: bodyWeight ? unit : null,
-        notes: sessionNotes,
-        exercises: exercisePayloads,
+        id: id || '',
+        payload: {
+          session_name: sessionName,
+          workout_date: workoutDate,
+          body_weight: bodyWeight ? parseFloat(bodyWeight) : null,
+          body_weight_unit: bodyWeight ? unit : null,
+          notes: sessionNotes,
+          exercises: exercisePayloads,
+        },
       },
       {
-        onSuccess: () => navigate(paths.home),
+        onSuccess: () => navigate(paths.workouts),
       }
     );
   };
 
+  if (isLoading) {
+    return <div className="text-gray-500">Loading workout...</div>;
+  }
+
   return (
     <div>
-      <h1 className="text-xl font-bold text-gray-900 mb-6">Log Workout</h1>
+      <h1 className="text-xl font-bold text-gray-900 mb-6">Edit Workout</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Session info */}
@@ -229,6 +276,17 @@ export function LogWorkoutPage() {
               >
                 Remove
               </button>
+            </div>
+
+            {/* Exercise notes */}
+            <div className="mb-3">
+              <input
+                type="text"
+                value={ex.notes}
+                onChange={(e) => updateExerciseNotes(exIdx, e.target.value)}
+                placeholder="Exercise notes (optional)"
+                className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+              />
             </div>
 
             {/* Sets table */}
@@ -392,10 +450,10 @@ export function LogWorkoutPage() {
         <div className="flex gap-3">
           <button
             type="submit"
-            disabled={exercises.length === 0 || createWorkout.isPending}
+            disabled={exercises.length === 0 || updateWorkout.isPending}
             className="bg-blue-600 text-white px-6 py-2 rounded font-medium hover:bg-blue-700 disabled:opacity-50"
           >
-            {createWorkout.isPending ? 'Saving...' : 'Save Workout'}
+            {updateWorkout.isPending ? 'Saving...' : 'Save Changes'}
           </button>
           <button
             type="button"
@@ -406,7 +464,7 @@ export function LogWorkoutPage() {
           </button>
         </div>
 
-        {createWorkout.isError && (
+        {updateWorkout.isError && (
           <p className="text-red-600 text-sm">
             Failed to save workout. Check your inputs and try again.
           </p>
