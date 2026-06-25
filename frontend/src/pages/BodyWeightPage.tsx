@@ -11,8 +11,26 @@ import {
 import { useBodyWeight } from '../hooks/useAnalytics';
 import { useAuthContext } from '../context/AuthContext';
 import { displayWeight, formatWeight } from '../lib/units';
+import { PageHeader } from '../components/ui/page-header';
+import { StatCard } from '../components/ui/stat-card';
+import { PeriodSelector } from '../components/ui/period-selector';
+import { Card, CardTitle } from '../components/ui/card';
+import { LoadingState } from '../components/ui/loading-state';
+import { CHART_COLORS, chartAxisProps, chartGridProps } from '../lib/chartTheme';
 
 type Period = 'week' | 'month' | 'year' | 'all';
+
+const PERIOD_OPTIONS: { value: Period; label: string }[] = [
+  { value: 'week', label: '7d' },
+  { value: 'month', label: '30d' },
+  { value: 'year', label: '1y' },
+  { value: 'all', label: 'All' },
+];
+
+const tooltipStyle = {
+  contentStyle: { background: '#1c1c1f', border: '1px solid #3f3f46', borderRadius: 8 },
+  labelStyle: { color: '#a1a1aa' },
+};
 
 export function BodyWeightPage() {
   const [period, setPeriod] = useState<Period>('month');
@@ -20,8 +38,8 @@ export function BodyWeightPage() {
   const { user } = useAuthContext();
   const unit = user?.unit_preference ?? 'kg';
 
-  if (isLoading) return <div className="text-gray-500">Loading body weight data...</div>;
-  if (error) return <div className="text-red-600">Failed to load body weight data.</div>;
+  if (isLoading) return <LoadingState message="Loading body weight data…" />;
+  if (error) return <p className="text-k-error">Failed to load body weight data.</p>;
   if (!data) return null;
 
   const dailyData = data.daily.map((p) => ({
@@ -34,94 +52,72 @@ export function BodyWeightPage() {
     smoothed: displayWeight(Number(w.avg_weight_kg), unit),
   }));
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Body Weight</h1>
-        <PeriodSelector period={period} onChange={setPeriod} />
-      </div>
+  const netChange = data.net_change_kg ? Number(data.net_change_kg) : null;
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-xs font-medium text-gray-500 uppercase">Current</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">
-            {data.current_weight_kg ? formatWeight(Number(data.current_weight_kg), unit) : '—'}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-xs font-medium text-gray-500 uppercase">Net Change</p>
-          <p className={`text-2xl font-bold mt-1 ${
-            data.net_change_kg && Number(data.net_change_kg) < 0 ? 'text-green-600'
-              : data.net_change_kg && Number(data.net_change_kg) > 0 ? 'text-red-600'
-              : 'text-gray-900'
-          }`}>
-            {data.net_change_kg
+  return (
+    <div className="space-y-8">
+      <PageHeader
+        title="Body Weight"
+        action={<PeriodSelector period={period} onChange={setPeriod} options={PERIOD_OPTIONS} />}
+      />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <StatCard
+          label="Current"
+          value={data.current_weight_kg ? formatWeight(Number(data.current_weight_kg), unit) : '—'}
+        />
+        <StatCard
+          label="Net Change"
+          value={
+            data.net_change_kg
               ? `${Number(data.net_change_kg) >= 0 ? '+' : ''}${formatWeight(Number(data.net_change_kg), unit)}`
-              : '—'}
-          </p>
-        </div>
+              : '—'
+          }
+          valueClassName={
+            netChange !== null
+              ? netChange < 0
+                ? 'text-green-400'
+                : netChange > 0
+                ? 'text-red-400'
+                : undefined
+              : undefined
+          }
+        />
       </div>
 
       {dailyData.length > 0 && (
-        <section className="bg-white rounded-lg shadow p-4">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">Daily Readings</h2>
+        <Card>
+          <CardTitle className="text-sm font-medium text-k-muted mb-4">Daily Readings</CardTitle>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={dailyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis domain={['auto', 'auto']} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="daily" stroke="#2563eb" dot={{ r: 3 }} strokeWidth={2} name="Daily" />
+              <CartesianGrid {...chartGridProps} />
+              <XAxis dataKey="date" {...chartAxisProps} />
+              <YAxis domain={['auto', 'auto']} {...chartAxisProps} />
+              <Tooltip {...tooltipStyle} />
+              <Line type="monotone" dataKey="daily" stroke={CHART_COLORS.primary} dot={{ r: 3, fill: CHART_COLORS.primary }} strokeWidth={2} name="Daily" />
             </LineChart>
           </ResponsiveContainer>
-        </section>
+        </Card>
       )}
 
       {smoothedData.length > 1 && (
-        <section className="bg-white rounded-lg shadow p-4">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">Weekly Average</h2>
+        <Card>
+          <CardTitle className="text-sm font-medium text-k-muted mb-4">Weekly Average</CardTitle>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={smoothedData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis domain={['auto', 'auto']} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="smoothed" stroke="#8b5cf6" dot={{ r: 3 }} strokeWidth={2} name="Weekly Avg" />
+              <CartesianGrid {...chartGridProps} />
+              <XAxis dataKey="date" {...chartAxisProps} />
+              <YAxis domain={['auto', 'auto']} {...chartAxisProps} />
+              <Tooltip {...tooltipStyle} />
+              <Line type="monotone" dataKey="smoothed" stroke={CHART_COLORS.secondary} dot={{ r: 3, fill: CHART_COLORS.secondary }} strokeWidth={2} name="Weekly Avg" />
             </LineChart>
           </ResponsiveContainer>
-        </section>
+        </Card>
       )}
 
       {dailyData.length === 0 && (
-        <p className="text-gray-500 text-center py-8">No body weight data for this period.</p>
+        <p className="text-k-muted text-center py-8">No body weight data for this period.</p>
       )}
-    </div>
-  );
-}
-
-function PeriodSelector({ period, onChange }: { period: Period; onChange: (p: Period) => void }) {
-  const options: { value: Period; label: string }[] = [
-    { value: 'week', label: '7d' },
-    { value: 'month', label: '30d' },
-    { value: 'year', label: '1y' },
-    { value: 'all', label: 'All' },
-  ];
-
-  return (
-    <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
-      {options.map((o) => (
-        <button
-          key={o.value}
-          onClick={() => onChange(o.value)}
-          className={`px-3 py-1 text-xs font-medium rounded-md transition ${
-            period === o.value
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          {o.label}
-        </button>
-      ))}
     </div>
   );
 }

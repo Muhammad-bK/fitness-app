@@ -3,7 +3,49 @@ export interface User {
   email: string;
   display_name: string | null;
   unit_preference: 'kg' | 'lbs';
+  is_onboarded: boolean;
+  onboarding_step: number;
   created_at: string;
+}
+
+export interface EquipmentOption {
+  id: string;
+  name: string;
+}
+
+export interface MuscleGroupOption {
+  id: string;
+  name: string;
+}
+
+export interface UserProfile {
+  date_of_birth?: string | null;
+  biological_sex?: 'male' | 'female' | 'other' | null;
+  height?: string | null;
+  current_weight?: string | null;
+  target_weight?: string | null;
+  current_body_type?: 'lean' | 'athletic' | 'bulky' | 'soft' | null;
+  target_body_type?: 'lean' | 'athletic' | 'bulky' | 'soft' | null;
+  goal_type?: 'lose_weight' | 'build_muscle' | 'maintain_weight' | 'improve_fitness' | null;
+  weekly_change_rate?: string | null;
+  workout_days_per_week?: number | null;
+  session_length_minutes?: number | null;
+  gym_type?: 'home' | 'commercial' | 'hybrid' | 'no_gym' | null;
+  experience_level?: 'beginner' | 'intermediate' | 'advanced' | null;
+  plan_source?: 'app_generated' | 'build_my_own' | null;
+  equipment?: EquipmentOption[];
+  target_muscle_groups?: MuscleGroupOption[];
+}
+
+export interface OnboardingState {
+  is_onboarded: boolean;
+  onboarding_step: number;
+  profile: UserProfile;
+}
+
+export interface OnboardingOptions {
+  equipment: EquipmentOption[];
+  muscle_groups: MuscleGroupOption[];
 }
 
 export interface AuthTokens {

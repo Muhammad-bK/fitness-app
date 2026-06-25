@@ -22,7 +22,7 @@ export function useCreateWorkout() {
   return useMutation({
     mutationFn: (payload: WorkoutWritePayload) => workoutsApi.createWorkout(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workouts'] });
+      void queryClient.invalidateQueries({ queryKey: ['workouts'] });
     },
   });
 }
@@ -33,8 +33,8 @@ export function useUpdateWorkout() {
     mutationFn: ({ id, payload }: { id: string; payload: WorkoutWritePayload }) =>
       workoutsApi.updateWorkout(id, payload),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ['workouts'] });
-      queryClient.invalidateQueries({ queryKey: ['workout', id] });
+      void queryClient.invalidateQueries({ queryKey: ['workouts'] });
+      void queryClient.invalidateQueries({ queryKey: ['workout', id] });
     },
   });
 }
@@ -44,7 +44,7 @@ export function useDeleteWorkout() {
   return useMutation({
     mutationFn: workoutsApi.deleteWorkout,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workouts'] });
+      void queryClient.invalidateQueries({ queryKey: ['workouts'] });
     },
   });
 }
