@@ -3,16 +3,10 @@ from decimal import Decimal
 
 from django.db.models import (
     Avg,
-    Case,
     Count,
-    F,
-    Max,
     Q,
-    Sum,
-    Value,
-    When,
 )
-from django.db.models.functions import ExtractIsoWeekDay, ExtractWeek, ExtractYear, TruncWeek
+from django.db.models.functions import TruncWeek
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -49,9 +43,7 @@ def _parse_period(request) -> tuple[date, date]:
     return start, end
 
 
-WORKING_SET_FILTER = ~Q(
-    workout_exercise__sets__set_type="warmup"
-)
+WORKING_SET_FILTER = ~Q(workout_exercise__sets__set_type="warmup")
 
 
 class BodyWeightView(APIView):
@@ -70,10 +62,7 @@ class BodyWeightView(APIView):
             .values("workout_date", "body_weight_kg")
         )
 
-        daily = [
-            {"date": str(s["workout_date"]), "weight_kg": str(s["body_weight_kg"])}
-            for s in sessions
-        ]
+        daily = [{"date": str(s["workout_date"]), "weight_kg": str(s["body_weight_kg"])} for s in sessions]
 
         weekly_avg = (
             WorkoutSession.objects.filter(
@@ -101,13 +90,15 @@ class BodyWeightView(APIView):
                 (Decimal(daily[-1]["weight_kg"]) - Decimal(daily[0]["weight_kg"])).quantize(Decimal("0.01"))
             )
 
-        return Response({
-            "period": {"start": str(start), "end": str(end)},
-            "daily": daily,
-            "smoothed_weekly": smoothed,
-            "current_weight_kg": current_weight,
-            "net_change_kg": net_change,
-        })
+        return Response(
+            {
+                "period": {"start": str(start), "end": str(end)},
+                "daily": daily,
+                "smoothed_weekly": smoothed,
+                "current_weight_kg": current_weight,
+                "net_change_kg": net_change,
+            }
+        )
 
 
 class ExerciseAnalyticsView(APIView):
@@ -121,7 +112,9 @@ class ExerciseAnalyticsView(APIView):
             id=exercise_id,
         ).first()
         if not exercise:
-            return Response({"error": {"code": "not_found", "message": "Exercise not found.", "details": {}}}, status=404)
+            return Response(
+                {"error": {"code": "not_found", "message": "Exercise not found.", "details": {}}}, status=404
+            )
 
         working_sets = (
             ExerciseSet.objects.filter(
@@ -177,7 +170,9 @@ class ExerciseAnalyticsView(APIView):
 
             weight_progression.append({"date": date_str, "max_weight_kg": str(max_weight)})
             rep_progression.append({"date": date_str, "reps_at_top_weight": top_weight_reps})
-            volume_progression.append({"date": date_str, "total_volume_kg": str(session_volume.quantize(Decimal("0.01")))})
+            volume_progression.append(
+                {"date": date_str, "total_volume_kg": str(session_volume.quantize(Decimal("0.01")))}
+            )
             one_rm_progression.append({"date": date_str, "estimated_1rm_kg": str(max_1rm)})
 
             if max_weight > best_weight["value"]:
@@ -189,19 +184,24 @@ class ExerciseAnalyticsView(APIView):
 
         personal_records = {
             "best_weight": {"value_kg": str(best_weight["value"]), "date": best_weight["date"]},
-            "best_single_session_volume": {"value_kg": str(best_volume["value"].quantize(Decimal("0.01"))), "date": best_volume["date"]},
+            "best_single_session_volume": {
+                "value_kg": str(best_volume["value"].quantize(Decimal("0.01"))),
+                "date": best_volume["date"],
+            },
             "best_estimated_1rm": {"value_kg": str(best_1rm["value"]), "date": best_1rm["date"]},
         }
 
-        return Response({
-            "exercise": {"id": str(exercise.id), "name": exercise.name},
-            "period": {"start": str(start), "end": str(end)},
-            "weight_progression": weight_progression,
-            "rep_progression": rep_progression,
-            "volume_progression": volume_progression,
-            "one_rm_progression": one_rm_progression,
-            "personal_records": personal_records,
-        })
+        return Response(
+            {
+                "exercise": {"id": str(exercise.id), "name": exercise.name},
+                "period": {"start": str(start), "end": str(end)},
+                "weight_progression": weight_progression,
+                "rep_progression": rep_progression,
+                "volume_progression": volume_progression,
+                "one_rm_progression": one_rm_progression,
+                "personal_records": personal_records,
+            }
+        )
 
 
 class ConsistencyView(APIView):
@@ -258,25 +258,23 @@ class ConsistencyView(APIView):
 
         # Weekly breakdown for charting
         weekly_counts = (
-            period_sessions
-            .annotate(week_start=TruncWeek("workout_date"))
+            period_sessions.annotate(week_start=TruncWeek("workout_date"))
             .values("week_start")
             .annotate(count=Count("id"))
             .order_by("week_start")
         )
 
-        return Response({
-            "period": {"start": str(start), "end": str(end)},
-            "workouts_this_week": workouts_this_week,
-            "workouts_this_month": workouts_this_month,
-            "total_workouts": total_workouts,
-            "current_streak_weeks": streak,
-            "avg_workouts_per_week": avg_per_week,
-            "weekly_breakdown": [
-                {"week": str(w["week_start"]), "count": w["count"]}
-                for w in weekly_counts
-            ],
-        })
+        return Response(
+            {
+                "period": {"start": str(start), "end": str(end)},
+                "workouts_this_week": workouts_this_week,
+                "workouts_this_month": workouts_this_month,
+                "total_workouts": total_workouts,
+                "current_streak_weeks": streak,
+                "avg_workouts_per_week": avg_per_week,
+                "weekly_breakdown": [{"week": str(w["week_start"]), "count": w["count"]} for w in weekly_counts],
+            }
+        )
 
 
 class DashboardView(APIView):
@@ -359,8 +357,11 @@ class DashboardView(APIView):
         strongest_lift = None
         max_1rm = Decimal("0")
         for s in working_sets.only(
-            "weight_kg", "reps", "set_type",
-            "workout_exercise__exercise__id", "workout_exercise__exercise__name",
+            "weight_kg",
+            "reps",
+            "set_type",
+            "workout_exercise__exercise__id",
+            "workout_exercise__exercise__name",
         ):
             orm = estimate_one_rep_max(s.weight_kg, s.reps)
             if orm > max_1rm:
@@ -390,8 +391,11 @@ class DashboardView(APIView):
 
         exercise_best_1rm: dict[str, Decimal] = {}
         for s in recent_working.only(
-            "weight_kg", "reps", "set_type",
-            "workout_exercise__exercise__id", "workout_exercise__exercise__name",
+            "weight_kg",
+            "reps",
+            "set_type",
+            "workout_exercise__exercise__id",
+            "workout_exercise__exercise__name",
             "workout_exercise__workout_session__workout_date",
         ):
             ex_id = str(s.workout_exercise.exercise.id)
@@ -400,8 +404,7 @@ class DashboardView(APIView):
             if orm > prev_best:
                 exercise_best_1rm[ex_id] = orm
                 if latest_pr is None or (
-                    s.workout_exercise.workout_session.workout_date >
-                    date.fromisoformat(latest_pr["date"])
+                    s.workout_exercise.workout_session.workout_date > date.fromisoformat(latest_pr["date"])
                 ):
                     latest_pr = {
                         "exercise_name": s.workout_exercise.exercise.name,
@@ -436,26 +439,26 @@ class DashboardView(APIView):
                 .values_list("weight_kg", flat=True)
                 .first()
             )
-            top_5.append({
-                "exercise_id": str(ex_id),
-                "exercise_name": tex["exercise__name"],
-                "session_count_30d": tex["session_count"],
-                "recent_max_weight_kg": str(recent_max) if recent_max else None,
-            })
+            top_5.append(
+                {
+                    "exercise_id": str(ex_id),
+                    "exercise_name": tex["exercise__name"],
+                    "session_count_30d": tex["session_count"],
+                    "recent_max_weight_kg": str(recent_max) if recent_max else None,
+                }
+            )
 
-        return Response({
-            "current_weight_kg": str(recent_weight) if recent_weight else None,
-            "weight_change_30d_kg": weight_change_30d,
-            "workouts_this_month": workouts_this_month,
-            "strongest_lift": strongest_lift,
-            "latest_pr": latest_pr,
-            "weight_trend": [
-                {"date": str(w["workout_date"]), "weight_kg": str(w["body_weight_kg"])}
-                for w in weight_trend
-            ],
-            "workout_frequency": [
-                {"week": str(w["week_start"]), "count": w["count"]}
-                for w in frequency
-            ],
-            "top_exercises": top_5,
-        })
+        return Response(
+            {
+                "current_weight_kg": str(recent_weight) if recent_weight else None,
+                "weight_change_30d_kg": weight_change_30d,
+                "workouts_this_month": workouts_this_month,
+                "strongest_lift": strongest_lift,
+                "latest_pr": latest_pr,
+                "weight_trend": [
+                    {"date": str(w["workout_date"]), "weight_kg": str(w["body_weight_kg"])} for w in weight_trend
+                ],
+                "workout_frequency": [{"week": str(w["week_start"]), "count": w["count"]} for w in frequency],
+                "top_exercises": top_5,
+            }
+        )

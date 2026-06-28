@@ -6,7 +6,17 @@ from .models import ExerciseSet, WorkoutExercise, WorkoutSession
 class ExerciseSetInline(admin.TabularInline):
     model = ExerciseSet
     extra = 0
-    fields = ["set_number", "set_type", "weight_kg", "weight_unit", "reps", "rest_time_seconds", "had_spotter", "paused", "notes"]
+    fields = [
+        "set_number",
+        "set_type",
+        "weight_kg",
+        "weight_unit",
+        "reps",
+        "rest_time_seconds",
+        "had_spotter",
+        "paused",
+        "notes",
+    ]
     readonly_fields = ["id"]
     ordering = ["set_number"]
 
