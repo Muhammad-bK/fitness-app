@@ -18,7 +18,7 @@ Hand-computed expected values (Epley: 1RM = w × (1 + r/30)):
   Bench best 1RM: 101.75 (S2)
 """
 
-from datetime import date, timedelta
+from datetime import date
 from decimal import Decimal
 
 import pytest
@@ -49,8 +49,10 @@ def analytics_data(authenticated_client):
 
     # Session 1: 2026-06-01
     s1 = WorkoutSessionFactory(
-        user=user, workout_date=date(2026, 6, 1),
-        body_weight_kg=Decimal("80.00"), body_weight_unit="kg",
+        user=user,
+        workout_date=date(2026, 6, 1),
+        body_weight_kg=Decimal("80.00"),
+        body_weight_unit="kg",
     )
     we1 = WorkoutExerciseFactory(workout_session=s1, exercise=bench, order_in_session=1)
     ExerciseSetFactory(workout_exercise=we1, set_number=1, set_type="warmup", weight_kg=Decimal("40.00"), reps=10)
@@ -59,8 +61,10 @@ def analytics_data(authenticated_client):
 
     # Session 2: 2026-06-08
     s2 = WorkoutSessionFactory(
-        user=user, workout_date=date(2026, 6, 8),
-        body_weight_kg=Decimal("80.50"), body_weight_unit="kg",
+        user=user,
+        workout_date=date(2026, 6, 8),
+        body_weight_kg=Decimal("80.50"),
+        body_weight_unit="kg",
     )
     we2 = WorkoutExerciseFactory(workout_session=s2, exercise=bench, order_in_session=1)
     ExerciseSetFactory(workout_exercise=we2, set_number=1, set_type="warmup", weight_kg=Decimal("40.00"), reps=10)
@@ -69,8 +73,10 @@ def analytics_data(authenticated_client):
 
     # Session 3: 2026-06-15
     s3 = WorkoutSessionFactory(
-        user=user, workout_date=date(2026, 6, 15),
-        body_weight_kg=Decimal("81.00"), body_weight_unit="kg",
+        user=user,
+        workout_date=date(2026, 6, 15),
+        body_weight_kg=Decimal("81.00"),
+        body_weight_unit="kg",
     )
     we3 = WorkoutExerciseFactory(workout_session=s3, exercise=squat, order_in_session=1)
     ExerciseSetFactory(workout_exercise=we3, set_number=1, set_type="working", weight_kg=Decimal("100.00"), reps=5)
@@ -159,6 +165,7 @@ class TestExerciseAnalytics:
 
     def test_exercise_not_found(self, authenticated_client):
         import uuid
+
         resp = authenticated_client.get(f"/api/analytics/exercise/{uuid.uuid4()}/")
         assert resp.status_code == status.HTTP_404_NOT_FOUND
 
@@ -167,7 +174,8 @@ class TestExerciseAnalytics:
         other = UserFactory()
         other_session = WorkoutSessionFactory(user=other, workout_date=date(2026, 6, 10))
         we = WorkoutExerciseFactory(
-            workout_session=other_session, exercise=analytics_data["bench"],
+            workout_session=other_session,
+            exercise=analytics_data["bench"],
         )
         ExerciseSetFactory(workout_exercise=we, weight_kg=Decimal("200.00"), reps=1)
 
