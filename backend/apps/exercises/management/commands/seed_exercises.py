@@ -42,4 +42,6 @@ class Command(BaseCommand):
             if created:
                 created_count += 1
 
-        self.stdout.write(self.style.SUCCESS(f"Seeded {created_count} new global exercises ({len(GLOBAL_EXERCISES)} total)."))
+        self.stdout.write(
+            self.style.SUCCESS(f"Seeded {created_count} new global exercises ({len(GLOBAL_EXERCISES)} total).")
+        )

@@ -16,7 +16,6 @@ from apps.exercises.serializers import ExerciseSerializer
 from .models import ExerciseSet, WorkoutExercise, WorkoutSession
 from .utils import convert_to_kg, display_weight
 
-
 # --- Read serializers (for GET responses) ---
 
 
@@ -26,9 +25,19 @@ class ExerciseSetReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExerciseSet
         fields = [
-            "id", "set_number", "set_type", "weight_kg", "weight_unit",
-            "display_weight", "reps", "rest_time_seconds", "had_spotter",
-            "paused", "pause_at_rep", "notes", "created_at",
+            "id",
+            "set_number",
+            "set_type",
+            "weight_kg",
+            "weight_unit",
+            "display_weight",
+            "reps",
+            "rest_time_seconds",
+            "had_spotter",
+            "paused",
+            "pause_at_rep",
+            "notes",
+            "created_at",
         ]
 
     def get_display_weight(self, obj) -> dict | None:
@@ -57,9 +66,17 @@ class WorkoutSessionReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkoutSession
         fields = [
-            "id", "session_name", "body_weight_kg", "body_weight_unit",
-            "display_body_weight", "workout_date", "notes",
-            "started_at", "ended_at", "workout_exercises", "created_at",
+            "id",
+            "session_name",
+            "body_weight_kg",
+            "body_weight_unit",
+            "display_body_weight",
+            "workout_date",
+            "notes",
+            "started_at",
+            "ended_at",
+            "workout_exercises",
+            "created_at",
         ]
 
     def get_display_body_weight(self, obj) -> dict | None:
@@ -81,9 +98,17 @@ class WorkoutSessionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkoutSession
         fields = [
-            "id", "session_name", "body_weight_kg", "body_weight_unit",
-            "workout_date", "notes", "started_at", "ended_at",
-            "exercise_count", "set_count", "created_at",
+            "id",
+            "session_name",
+            "body_weight_kg",
+            "body_weight_unit",
+            "workout_date",
+            "notes",
+            "started_at",
+            "ended_at",
+            "exercise_count",
+            "set_count",
+            "created_at",
         ]
 
 
