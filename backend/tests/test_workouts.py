@@ -1,8 +1,9 @@
-import pytest
 from decimal import Decimal
+
+import pytest
 from rest_framework import status
 
-from apps.workouts.models import WorkoutSession, ExerciseSet
+from apps.workouts.models import ExerciseSet, WorkoutSession
 
 from .factories import (
     ExerciseFactory,

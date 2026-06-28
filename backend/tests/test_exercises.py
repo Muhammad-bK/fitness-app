@@ -51,11 +51,14 @@ class TestExerciseCreate:
     URL = "/api/exercises/"
 
     def test_create_custom_exercise(self, authenticated_client):
-        resp = authenticated_client.post(self.URL, {
-            "name": "Cable Fly",
-            "muscle_group": "chest",
-            "category": "cable",
-        })
+        resp = authenticated_client.post(
+            self.URL,
+            {
+                "name": "Cable Fly",
+                "muscle_group": "chest",
+                "category": "cable",
+            },
+        )
         assert resp.status_code == status.HTTP_201_CREATED
         assert resp.data["is_global"] is False
         assert str(resp.data["created_by"]) == str(authenticated_client.user.id)
