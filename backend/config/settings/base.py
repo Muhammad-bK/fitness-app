@@ -17,8 +17,8 @@ env = environ.Env(
 )
 env_file = os.path.join(BASE_DIR, ".env")
 
-if not os.path.exists(env_file):
-    raise FileNotFoundError(f".env not found at: {env_file}")
+if os.path.exists(env_file):
+    load_dotenv(env_file)
 
 environ.Env.read_env(env_file)
 
@@ -98,7 +98,7 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
-    "default": { "BACKEND": "django.core.files.storage.FileSystemStorage" }
+    "default": { "BACKEND": "django.core.files.storage.FileSystemStorage" },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
