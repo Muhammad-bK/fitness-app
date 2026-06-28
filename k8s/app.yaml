@@ -1,0 +1,105 @@
+# ---------- Postgres ----------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: fitness
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: fitness
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: postgres }
+  strategy: { type: Recreate }
+  template:
+    metadata:
+      labels: { app: postgres }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          envFrom:
+            - secretRef: { name: fitness-secrets }
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec: { command: ["pg_isready", "-U", "fitness"] }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: postgres-pvc }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: fitness
+spec:
+  selector: { app: postgres }
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+# ---------- Backend ----------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: fitness
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: backend }
+  template:
+    metadata:
+      labels: { app: backend }
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:16
+          command: ["sh", "-c", "until pg_isready -h postgres -p 5432; do echo waiting for db; sleep 2; done"]
+      containers:
+        - name: backend
+          image: fitness-backend:v1
+          imagePullPolicy: Never
+          envFrom:
+            - secretRef: { name: fitness-secrets }
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            tcpSocket: { port: 8000 }
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket: { port: 8000 }
+            initialDelaySeconds: 30
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: fitness
+spec:
+  selector: { app: backend }
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
