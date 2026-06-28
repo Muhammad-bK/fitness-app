@@ -27,4 +27,4 @@ jobs:
         run: ruff check .
 
       - name: Black (format check)
-        run: black --check
+        run: black --check .
