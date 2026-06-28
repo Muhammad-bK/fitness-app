@@ -3,6 +3,7 @@ from decimal import Decimal
 import factory
 from django.contrib.auth import get_user_model
 
+from apps.accounts.models import Equipment, MuscleGroup
 from apps.exercises.models import Exercise
 from apps.workouts.models import ExerciseSet, WorkoutExercise, WorkoutSession
 
@@ -24,6 +25,20 @@ class UserFactory(factory.django.DjangoModelFactory):
         user.set_password(password)
         user.save()
         return user
+
+
+class EquipmentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Equipment
+
+    name = factory.Sequence(lambda n: f"Equipment {n}")
+
+
+class MuscleGroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = MuscleGroup
+
+    name = factory.Sequence(lambda n: f"Muscle Group {n}")
 
 
 class ExerciseFactory(factory.django.DjangoModelFactory):

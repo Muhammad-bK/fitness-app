@@ -18,7 +18,7 @@ Hand-computed expected values (Epley: 1RM = w × (1 + r/30)):
   Bench best 1RM: 101.75 (S2)
 """
 
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
@@ -245,3 +245,73 @@ class TestDashboard:
     def test_query_count(self, authenticated_client, analytics_data, django_assert_max_num_queries):
         with django_assert_max_num_queries(25):
             authenticated_client.get(self.URL)
+
+
+class TestPeriodParsing:
+    """Exercise _parse_period via the consistency endpoint's returned period."""
+
+    URL = "/api/analytics/consistency/"
+
+    def test_default_period_is_last_30_days(self, authenticated_client):
+        resp = authenticated_client.get(self.URL)
+        today = date.today()
+        assert resp.data["period"]["end"] == str(today)
+        assert resp.data["period"]["start"] == str(today - timedelta(days=30))
+
+    def test_week_period(self, authenticated_client):
+        resp = authenticated_client.get(self.URL, {"period": "week"})
+        today = date.today()
+        assert resp.data["period"]["start"] == str(today - timedelta(days=7))
+
+    def test_year_period(self, authenticated_client):
+        resp = authenticated_client.get(self.URL, {"period": "year"})
+        today = date.today()
+        assert resp.data["period"]["start"] == str(today - timedelta(days=365))
+
+    def test_all_period(self, authenticated_client):
+        resp = authenticated_client.get(self.URL, {"period": "all"})
+        assert resp.data["period"]["start"] == "2000-01-01"
+
+    def test_explicit_start_end_override_period(self, authenticated_client):
+        resp = authenticated_client.get(self.URL, {"period": "week", "start": "2026-01-01", "end": "2026-03-31"})
+        assert resp.data["period"]["start"] == "2026-01-01"
+        assert resp.data["period"]["end"] == "2026-03-31"
+
+
+class TestDashboardRecentData:
+    """Time-robust dashboard checks using data anchored at today()."""
+
+    URL = "/api/analytics/dashboard/"
+
+    @pytest.fixture
+    def recent_data(self, authenticated_client):
+        user = authenticated_client.user
+        bench = ExerciseFactory(name="Bench Press", muscle_group="chest", is_global=True)
+        session = WorkoutSessionFactory(
+            user=user,
+            workout_date=date.today(),
+            body_weight_kg=Decimal("80.00"),
+            body_weight_unit="kg",
+        )
+        we = WorkoutExerciseFactory(workout_session=session, exercise=bench, order_in_session=1)
+        ExerciseSetFactory(workout_exercise=we, set_number=1, set_type="warmup", weight_kg=Decimal("40.00"), reps=10)
+        ExerciseSetFactory(workout_exercise=we, set_number=2, set_type="working", weight_kg=Decimal("100.00"), reps=5)
+        return {"bench": bench}
+
+    def test_latest_pr_excludes_warmups(self, authenticated_client, recent_data):
+        resp = authenticated_client.get(self.URL)
+        pr = resp.data["latest_pr"]
+        assert pr is not None
+        assert pr["exercise_name"] == "Bench Press"
+        # Best working set was 100kg×5, not the 40kg warmup.
+        assert pr["weight_kg"] == "100.00"
+        assert pr["reps"] == 5
+
+    def test_top_exercises_counts_recent_sessions(self, authenticated_client, recent_data):
+        resp = authenticated_client.get(self.URL)
+        top = resp.data["top_exercises"]
+        assert len(top) >= 1
+        bench_entry = next(e for e in top if e["exercise_name"] == "Bench Press")
+        assert bench_entry["session_count_30d"] == 1
+        # Recent max weight ignores warmups.
+        assert bench_entry["recent_max_weight_kg"] == "100.00"
