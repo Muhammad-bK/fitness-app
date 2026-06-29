@@ -2,9 +2,10 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: fitness
-  namespace: fitness                              
+  namespace: fitness
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-staging   
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.middlewares: fitness-redirect-https@kubernetescrd
 spec:
   ingressClassName: traefik
   tls:
@@ -18,9 +19,9 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: backend                 
+                name: backend
                 port:
-                  number: 8000                
+                  number: 8000
           - path: /admin
             pathType: Prefix
             backend:
