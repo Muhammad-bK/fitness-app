@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fitness
+  namespace: fitness                              
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging   
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts: [fitness-ai-app.duckdns.org]
+      secretName: fitness-tls
+  rules:
+    - host: fitness-ai-app.duckdns.org
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend                 
+                port:
+                  number: 8000                
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8000
+          - path: /static
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: fitness-frontend
+                port:
+                  number: 80

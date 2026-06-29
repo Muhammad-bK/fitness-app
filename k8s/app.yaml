@@ -33,6 +33,13 @@ spec:
           env:
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
+          resources:     
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
           ports:
             - containerPort: 5432
           volumeMounts:
@@ -81,6 +88,13 @@ spec:
           imagePullPolicy: Never
           envFrom:
             - secretRef: { name: fitness-secrets }
+          resources:        
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
           ports:
             - containerPort: 8000
           readinessProbe:
