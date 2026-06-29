@@ -84,8 +84,8 @@ spec:
           command: ["sh", "-c", "until pg_isready -h postgres -p 5432; do echo waiting for db; sleep 2; done"]
       containers:
         - name: backend
-          image: fitness-backend:v1
-          imagePullPolicy: Never
+          image: ghcr.io/muhammad-bk/fitness-app-backend:latest
+          imagePullPolicy: Always
           envFrom:
             - secretRef: { name: fitness-secrets }
           resources:        

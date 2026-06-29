@@ -13,8 +13,8 @@ spec:
     spec:
       containers:
         - name: caddy
-          image: fitness-frontend:v1
-          imagePullPolicy: IfNotPresent
+          image: ghcr.io/muhammad-bk/fitness-app-frontend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           resources:
