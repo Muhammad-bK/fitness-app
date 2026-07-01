@@ -126,21 +126,25 @@ class Command(BaseCommand):
                     # Warmup + 3-4 working sets
                     sets_data = []
                     if progression > 0:
-                        sets_data.append({
-                            "set_number": 1,
-                            "set_type": "warmup",
-                            "weight_kg": (progression * Decimal("0.5")).quantize(Decimal("0.01")),
-                            "reps": 10,
-                        })
+                        sets_data.append(
+                            {
+                                "set_number": 1,
+                                "set_type": "warmup",
+                                "weight_kg": (progression * Decimal("0.5")).quantize(Decimal("0.01")),
+                                "reps": 10,
+                            }
+                        )
                     for s in range(2, random.choice([5, 6])):
                         reps = random.choice([6, 8, 10, 12]) if s < 4 else random.choice([4, 6, 8])
-                        sets_data.append({
-                            "set_number": s,
-                            "set_type": "working",
-                            "weight_kg": progression if progression > 0 else None,
-                            "reps": reps,
-                            "rest_time_seconds": random.choice([90, 120, 150, 180]),
-                        })
+                        sets_data.append(
+                            {
+                                "set_number": s,
+                                "set_type": "working",
+                                "weight_kg": progression if progression > 0 else None,
+                                "reps": reps,
+                                "rest_time_seconds": random.choice([90, 120, 150, 180]),
+                            }
+                        )
 
                     set_objects = [
                         ExerciseSet(

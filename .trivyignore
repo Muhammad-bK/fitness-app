@@ -1,0 +1,5 @@
+# Caddy binary compiled with Go 1.26.3 - fixed in Go 1.26.4.
+# Suppress until caddy:2-alpine is rebuilt with Go 1.26.4+.
+# Revisit by: 2026-10-01
+CVE-2026-27145
+CVE-2026-42504

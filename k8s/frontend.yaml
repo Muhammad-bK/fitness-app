@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fitness-frontend
+  namespace: fitness
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: fitness-frontend }
+  template:
+    metadata:
+      labels: { app: fitness-frontend }
+    spec:
+      containers:
+        - name: caddy
+          image: ghcr.io/muhammad-bk/fitness-app-frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests: { cpu: "10m", memory: "32Mi" }
+            limits:   { cpu: "100m",memory: "64Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fitness-frontend
+  namespace: fitness
+spec:
+  selector: { app: fitness-frontend }
+  ports:
+    - port: 80
+      targetPort: 80

@@ -14,9 +14,20 @@ class Exercise(models.Model):
         OTHER = "other", "Other"
 
     SUGGESTED_MUSCLE_GROUPS = [
-        "chest", "back", "shoulders", "biceps", "triceps",
-        "quadriceps", "hamstrings", "glutes", "calves", "core",
-        "forearms", "traps", "lats", "full_body",
+        "chest",
+        "back",
+        "shoulders",
+        "biceps",
+        "triceps",
+        "quadriceps",
+        "hamstrings",
+        "glutes",
+        "calves",
+        "core",
+        "forearms",
+        "traps",
+        "lats",
+        "full_body",
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

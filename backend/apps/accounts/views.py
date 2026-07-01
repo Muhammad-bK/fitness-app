@@ -9,9 +9,6 @@ from .serializers import (
     EquipmentSerializer,
     MuscleGroupSerializer,
     OnboardingCompleteProfileSerializer,
-    OnboardingCompleteSerializer,
-    OnboardingStateSerializer,
-    OnboardingUpdateSerializer,
     RegisterSerializer,
     UserProfileSerializer,
     UserSerializer,
@@ -58,7 +55,13 @@ class LogoutView(APIView):
             token.blacklist()
         except Exception:
             return Response(
-                {"error": {"code": "invalid_token", "message": "Token is invalid or already blacklisted.", "details": {}}},
+                {
+                    "error": {
+                        "code": "invalid_token",
+                        "message": "Token is invalid or already blacklisted.",
+                        "details": {},
+                    }
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         return Response(status=status.HTTP_205_RESET_CONTENT)
