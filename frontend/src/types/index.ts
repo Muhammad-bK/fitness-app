@@ -33,6 +33,10 @@ export interface UserProfile {
   gym_type?: 'home' | 'commercial' | 'hybrid' | 'no_gym' | null;
   experience_level?: 'beginner' | 'intermediate' | 'advanced' | null;
   plan_source?: 'app_generated' | 'build_my_own' | null;
+  activity_level?: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' | null;
+  dietary_preferences?: string[];
+  calorie_deficit?: number | null;
+  calorie_surplus?: number | null;
   equipment?: EquipmentOption[];
   target_muscle_groups?: MuscleGroupOption[];
 }

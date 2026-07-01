@@ -109,6 +109,13 @@ class UserProfile(models.Model):
         APP_GENERATED = "app_generated", "App Generated Plan"
         BUILD_MY_OWN = "build_my_own", "Build My Own Plan"
 
+    class ActivityLevel(models.TextChoices):
+        SEDENTARY = "sedentary", "Sedentary"
+        LIGHT = "light", "Light"
+        MODERATE = "moderate", "Moderate"
+        ACTIVE = "active", "Active"
+        VERY_ACTIVE = "very_active", "Very Active"
+
     user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
     date_of_birth = models.DateField(blank=True, null=True)
     biological_sex = models.CharField(
@@ -158,6 +165,24 @@ class UserProfile(models.Model):
         choices=PlanSource.choices,
         blank=True,
         null=True,
+    )
+    activity_level = models.CharField(
+        max_length=20,
+        choices=ActivityLevel.choices,
+        blank=True,
+        null=True,
+        default=ActivityLevel.MODERATE,
+    )
+    dietary_preferences = models.JSONField(default=list, blank=True)
+    calorie_deficit = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        help_text="Daily calorie deficit for fat loss (250/500/750)",
+    )
+    calorie_surplus = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        help_text="Daily calorie surplus for muscle gain (200-500)",
     )
     equipment = models.ManyToManyField(
         Equipment,

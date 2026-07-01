@@ -15,6 +15,9 @@ import { BodyWeightPage } from './pages/BodyWeightPage';
 import { ExerciseProgressPage } from './pages/ExerciseProgressPage';
 import { ExerciseListAnalyticsPage } from './pages/ExerciseListAnalyticsPage';
 import { ConsistencyPage } from './pages/ConsistencyPage';
+import { GoalPage } from './pages/GoalPage';
+import { NutritionPage } from './pages/NutritionPage';
+import { WorkoutPlannerPage } from './pages/WorkoutPlannerPage';
 import { routePatterns } from './routes';
 
 const queryClient = new QueryClient({
@@ -47,6 +50,9 @@ function App() {
               <Route path={routePatterns.workout} element={<WorkoutDetailPage />} />
               <Route path={routePatterns.editWorkout} element={<EditWorkoutPage />} />
               <Route path={routePatterns.log} element={<LogWorkoutPage />} />
+              <Route path={routePatterns.goal} element={<GoalPage />} />
+              <Route path={routePatterns.nutrition} element={<NutritionPage />} />
+              <Route path={routePatterns.workoutPlanner} element={<WorkoutPlannerPage />} />
               <Route path={routePatterns.analytics.bodyweight} element={<BodyWeightPage />} />
               <Route path={routePatterns.analytics.exercises} element={<ExerciseListAnalyticsPage />} />
               <Route path={routePatterns.analytics.exercise} element={<ExerciseProgressPage />} />

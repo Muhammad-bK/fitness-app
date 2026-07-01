@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useDashboard } from '../hooks/useAnalytics';
+import { useFitnessProgress } from '../hooks/useIntelligence';
 import { useAuthContext } from '../context/AuthContext';
 import { displayWeight, formatWeight } from '../lib/units';
 import { paths, exerciseProgressNav } from '../routes';
@@ -18,10 +19,12 @@ import { PageHeader } from '../components/ui/page-header';
 import { StatCard } from '../components/ui/stat-card';
 import { Card, CardTitle } from '../components/ui/card';
 import { LoadingState } from '../components/ui/loading-state';
+import { Button } from '../components/ui/button';
 import { CHART_COLORS, chartAxisProps, chartGridProps } from '../lib/chartTheme';
 
 export function DashboardPage() {
   const { data, isLoading, error } = useDashboard();
+  const { data: progress } = useFitnessProgress();
   const { user } = useAuthContext();
   const unit = user?.unit_preference ?? 'kg';
 
@@ -42,6 +45,65 @@ export function DashboardPage() {
   return (
     <div className="space-y-8">
       <PageHeader title="Dashboard" description="Your training overview at a glance" />
+
+      {progress?.goal_estimate && (
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <CardTitle className="text-sm font-medium text-k-muted">Fitness Intelligence</CardTitle>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link to={paths.goal}>Goals</Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild>
+                <Link to={paths.nutrition}>Nutrition</Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild>
+                <Link to={paths.workoutPlanner}>Planner</Link>
+              </Button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              label="Calorie Target"
+              value={`${Math.round(progress.goal_estimate.calorie_target)} kcal`}
+            />
+            <StatCard
+              label="Protein Target"
+              value={`${progress.goal_estimate.macro_breakdown.protein_g}g`}
+            />
+            <StatCard
+              label="Goal Date"
+              value={progress.goal_estimate.estimated_completion_date ?? '—'}
+            />
+            <StatCard
+              label="Nutrition (30d)"
+              value={`${Math.round(progress.nutrition_30d.totals.calories)} kcal`}
+              sub={`${progress.nutrition_30d.days_logged} days logged`}
+            />
+          </div>
+          {progress.goal_estimate.weekly_projection.length > 1 && (
+            <div className="mt-6">
+              <p className="text-xs text-k-muted mb-2">Goal timeline projection</p>
+              <ResponsiveContainer width="100%" height={160}>
+                <LineChart
+                  data={progress.goal_estimate.weekly_projection.map((p) => ({
+                    week: `W${p.week}`,
+                    weight: displayWeight(p.weight_kg, unit),
+                  }))}
+                >
+                  <CartesianGrid {...chartGridProps} />
+                  <XAxis dataKey="week" {...chartAxisProps} />
+                  <YAxis domain={['auto', 'auto']} {...chartAxisProps} />
+                  <Tooltip
+                    contentStyle={{ background: '#1c1c1f', border: '1px solid #3f3f46', borderRadius: 8 }}
+                  />
+                  <Line type="monotone" dataKey="weight" stroke={CHART_COLORS.secondary} dot={false} strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </Card>
+      )}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard

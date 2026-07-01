@@ -6,6 +6,9 @@ import { cn } from '../lib/utils';
 import { paths } from '../routes';
 const NAV_ITEMS = [
   { path: paths.home, label: 'Dashboard' },
+  { path: paths.goal, label: 'Goals' },
+  { path: paths.nutrition, label: 'Nutrition' },
+  { path: paths.workoutPlanner, label: 'Planner' },
   { path: paths.workouts, label: 'Workouts' },
   { path: paths.log, label: 'Log' },
   { path: paths.analytics.bodyweight, label: 'Weight' },

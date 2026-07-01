@@ -1,12 +1,33 @@
 # Workout Analytics Platform
 
-A workout analytics web application for serious lifters. Log workouts with detailed set metadata and track strength progression, body weight trends, and training consistency.
+A workout analytics web application for serious lifters. Log workouts with detailed set metadata and track strength progression, body weight trends, training consistency, nutrition, and AI-generated workout plans.
 
 ## Architecture
 
 ```
 backend/          Python/Django REST API + PostgreSQL
 frontend/         React 18 + TypeScript + Tailwind CSS
+```
+
+### Fitness Intelligence Engine
+
+Modular intelligence system integrated into the existing Django architecture:
+
+| Module | Endpoint prefix | Description |
+|---|---|---|
+| Goal Estimation | `/api/goal/` | Mifflin-St Jeor BMR/TDEE, calorie targets, timeline projection |
+| Nutrition | `/api/food/` | USDA FoodData Central search, detail, meal logging |
+| Workout Generation | `/api/workout/` | API Ninjas exercise catalog + program generation |
+| Intelligence | `/api/intelligence/` | Muscle anatomy mapping, progress analytics |
+
+Backend structure per app:
+
+```
+apps/intelligence/
+  integrations/     USDA + API Ninjas clients (retry, caching)
+  services/           Goal engine, workout generator, progress analytics
+  repositories/       Food log + workout plan persistence
+  utils/              Cache helpers, muscle mapping
 ```
 
 ### Frontend Layered Structure (React Native Portable)
@@ -53,6 +74,9 @@ python manage.py migrate
 
 # Seed global exercises
 python manage.py seed_exercises
+
+# Seed muscle mapping reference data
+python manage.py seed_muscle_mapping
 
 # Create demo data (optional — generates 3 months of workouts)
 python manage.py create_demo_data
@@ -108,3 +132,18 @@ See `backend/.env.example` for all required variables.
 | DATABASE_URL | PostgreSQL connection string |
 | CORS_ALLOWED_ORIGINS | Frontend origin(s) |
 | DJANGO_SETTINGS_MODULE | Settings module (config.settings.dev) |
+| USDA_API_KEY | [USDA FoodData Central](https://fdc.nal.usda.gov/api-guide.html) API key |
+| API_NINJAS_KEY | [API Ninjas](https://api-ninjas.com/api/exercises) API key |
+
+## Fitness Intelligence API
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/goal/estimate/` | Calculate BMR, TDEE, calorie target, macros, timeline |
+| GET | `/api/food/search/?q=` | Search USDA foods |
+| GET | `/api/food/{fdc_id}/` | Food nutrient detail |
+| GET/POST | `/api/food/log/` | Daily food log (GET) / log food (POST) |
+| GET | `/api/intelligence/exercise-catalog/?muscle=` | API Ninjas exercise discovery |
+| POST | `/api/workout/generate/` | Generate workout plan |
+| GET | `/api/workout/today/` | Today's scheduled workout |
+| GET | `/api/intelligence/progress/` | Combined fitness progress analytics |

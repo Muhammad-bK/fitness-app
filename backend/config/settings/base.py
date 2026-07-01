@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "apps.exercises",
     "apps.workouts",
     "apps.analytics",
+    "apps.intelligence",
 ]
 
 MIDDLEWARE = [
@@ -130,6 +131,18 @@ SPECTACULAR_SETTINGS = {
 
 # CORS
 CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS")
+
+# External API keys (fitness intelligence engine)
+USDA_API_KEY = env("USDA_API_KEY", default="")
+API_NINJAS_KEY = env("API_NINJAS_KEY", default="")
+
+# Cache for external API responses
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "fitness-intelligence",
+    }
+}
 
 # Logging
 LOGGING = {
